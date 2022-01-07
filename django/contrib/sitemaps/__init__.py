@@ -157,17 +157,6 @@ class Sitemap:
         domain = self.get_domain(site)
         return self._urls(page, protocol, domain)
 
-    def get_latest_lastmod(self):
-        if not hasattr(self, 'lastmod'):
-            return None
-        if callable(self.lastmod):
-            try:
-                return max([self.lastmod(item) for item in self.items()])
-            except TypeError:
-                return None
-        else:
-            return self.lastmod
-
     def _urls(self, page, protocol, domain):
         urls = []
         latest_lastmod = None
@@ -196,7 +185,7 @@ class Sitemap:
 
             if self.i18n and self.alternates:
                 for lang_code in self._languages():
-                    loc = f'{protocol}://{domain}{self._location(item, lang_code)}'
+                    loc = f'{protocol}://{domain}/{lang_code}{self._location(item, lang_code)}'
                     url_info['alternates'].append({
                         'location': loc,
                         'lang_code': lang_code,
@@ -236,9 +225,4 @@ class GenericSitemap(Sitemap):
     def lastmod(self, item):
         if self.date_field is not None:
             return getattr(item, self.date_field)
-        return None
-
-    def get_latest_lastmod(self):
-        if self.date_field is not None:
-            return self.queryset.order_by('-' + self.date_field).values_list(self.date_field, flat=True).first()
         return None
